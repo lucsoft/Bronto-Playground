@@ -65,6 +65,7 @@ public class BrontoActivity extends Activity {
                 window.setStatusBarColor(Color.rgb(r, g, b));
             }
 
+            // this one does not work yet - LePichu
             @JavascriptInterface
             public boolean hideStatusBar(boolean value) {
                 if (value) {
