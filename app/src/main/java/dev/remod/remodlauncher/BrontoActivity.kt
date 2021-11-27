@@ -9,12 +9,10 @@ import android.content.Context
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.widget.Toast
-import java.util.logging.Logger
 
 open class BrontoActivity : Activity() {
     internal inner class CustomWV : WebViewClient() {
@@ -85,10 +83,9 @@ open class BrontoActivity : Activity() {
                 "    os: MiscInfo.getOS(),\n" +
                 "    vendor: MiscInfo.getVendor(),\n" +
                 "    env: MiscInfo.getEnv()\n" +
-                "}", ValueCallback {
+                "}", {
                     value -> println("Loaded")
         })
-        wv?.addJavascriptInterface(Deno.fs(this), "Deno")
 
         /* To make sure all custom modules load
         before pageload and not end up causing
