@@ -1,13 +1,15 @@
 package dev.remod.remodlauncher
 
-import android.app.Activity
 import android.webkit.WebViewClient
 import android.webkit.WebView
 import android.content.Intent
 import android.annotation.SuppressLint
+import android.app.*
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.Window
 import android.webkit.JavascriptInterface
@@ -15,18 +17,6 @@ import android.webkit.ValueCallback
 import android.widget.Toast
 
 open class BrontoActivity : Activity() {
-    internal inner class CustomWV : WebViewClient() {
-        override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-            val hostname = "google.com"
-            val uri = Uri.parse(url)
-            if (url.startsWith("file:") || uri.host != null && uri.host!!.endsWith(hostname)) {
-                return false
-            }
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            view.context.startActivity(intent)
-            return true
-        }
-    }
 
     private var wv: WebView? = null
     @SuppressLint("SetJavaScriptEnabled")
@@ -37,11 +27,11 @@ open class BrontoActivity : Activity() {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.activity_main)
         wv = findViewById(R.id.activity_main_webview)
-        wv?.setWebViewClient(CustomWV())
 
         // Settings
         val ws = wv?.getSettings()
         ws?.javaScriptEnabled = true
+        wv?.loadUrl("https://github.com")
 
         // Bronto momento
         class Brontodroid (var ctx: Context) {
@@ -55,6 +45,38 @@ open class BrontoActivity : Activity() {
             fun changeStatusBarColor(r: Int, g: Int, b: Int) {
                 val window = window
                 window.statusBarColor = Color.rgb(r, g, b)
+            }
+
+            @JavascriptInterface
+            fun buildNativeNotification(title: String, text: String, icon: String?) {
+                var notificationManager: NotificationManager
+                var notificationChannel: NotificationChannel
+                var builder: Notification.Builder
+
+                var channelId = "com.remod.brontodroid.notifs"
+
+                notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                val intent = Intent(ctx, BrontoActivity::class.java)
+                val pendingIntent = PendingIntent.getActivity(ctx, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    notificationChannel = NotificationChannel(channelId, text, NotificationManager.IMPORTANCE_HIGH)
+                    notificationChannel.enableLights(true)
+                    notificationChannel.lightColor = Color.GREEN
+                    notificationChannel.enableVibration(false)
+                    notificationManager.createNotificationChannel(notificationChannel)
+
+                    builder = Notification.Builder(ctx, channelId)
+                        .setSmallIcon(R.drawable.ic_launcher_background)
+                        .setLargeIcon(BitmapFactory.decodeResource(ctx.resources, R.drawable.ic_launcher_background))
+                        .setContentIntent(pendingIntent)
+                } else {
+
+                    builder = Notification.Builder(ctx)
+                        .setSmallIcon(R.drawable.ic_launcher_background)
+                        .setLargeIcon(BitmapFactory.decodeResource(ctx.resources, R.drawable.ic_launcher_background))
+                        .setContentIntent(pendingIntent)
+                }
+                notificationManager.notify(1234, builder.build())
             }
         }
 
@@ -91,7 +113,7 @@ open class BrontoActivity : Activity() {
         before pageload and not end up causing
         issues with load and close scripts, we
         need to load page after modules load */
-        wv?.loadUrl("file:///android_asset/index.html")
+
     }
 
     override fun onBackPressed() {
