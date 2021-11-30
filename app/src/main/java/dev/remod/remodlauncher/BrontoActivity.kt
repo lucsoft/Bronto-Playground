@@ -10,34 +10,22 @@ import dev.remod.remodlauncher.js_bridges.*
 
 open class BrontoActivity : Activity() {
 
-    private var webView: WebView = findViewById(R.id.wv)
+    private var webView: WebView? = null
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        webView = findViewById(R.id.wv)
         setContentView(R.layout.activity_main)
 
         // Settings
-        webView.settings.javaScriptEnabled = true
+        webView?.settings?.javaScriptEnabled = true
 
-        // Preload Bridges and Evals
-        webView.webViewClient = WebChromeClient() as WebViewClient
-        webView.addJavascriptInterface(Brontodroid(this), "Brontodroid")
-        webView.addJavascriptInterface(MiscInfoInterface(this), "MiscInfo")
-
-        webView.evaluateJavascript("let Deno = {}\n" +
-                "\n" +
-                "Deno.build = {\n" +
-                "    target: MiscInfo.getTarget(),\n" +
-                "    arch: MiscInfo.getArch(),\n" +
-                "    os: MiscInfo.getOS(),\n" +
-                "    vendor: MiscInfo.getVendor(),\n" +
-                "    env: MiscInfo.getEnv()\n" +
-                "}", {
-                value -> println("Loaded")
-        })
+        webView?.addJavascriptInterface(Brontodroid(this), "Brontodroid")
+        webView?.addJavascriptInterface(MiscInfoInterface(this), "MiscInfo")
 
         // Init after everything loads
-        webView.loadUrl("file:///android_asset/index.html")
+        webView?.loadUrl("file:///android_asset/index.html")
     }
 
     override fun onBackPressed() {
